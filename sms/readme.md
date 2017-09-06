@@ -80,3 +80,12 @@
 | extra  | map |是 |  额外参数   |
 
 
+### 5，只加入发送队列，不需要等待返回结果
+
+> 发送短信会进行http请求，这是一个耗时的io操作，因此我们可以只给sms一个发送短信任务，然后继续做自己的不用sms模块返回结果。
+> 如果短信发送失败，用户可能也会重新触发发送短信，因此等待这个返回结果意义不大
+
+    extra:=map[string]interface{}{}
+    err:=self.module.RpcInvokeNR("SMS","SendVerifiycode",phone,purpose,extra)
+
+ 上面的调用就不是不需要SMS模块返回结果，SMS模块可以根据自身的处理性能异步执行发送短信任务。
