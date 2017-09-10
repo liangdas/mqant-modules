@@ -15,7 +15,7 @@ import (
 	"encoding/json"
 	"github.com/liangdas/mqant/utils"
 	"github.com/garyburd/redigo/redis"
-	//"github.com/liangdas/mqant/log"
+	"github.com/liangdas/mqant/gate"
 )
 
 var Module = func() module.Module {
@@ -51,6 +51,7 @@ func (self *SMS) OnInit(app module.App, settings *conf.ModuleSettings) {
 		self.Ailyun=Ailyun.(map[string]interface {})
 	}
 	self.GetServer().RegisterGO("SendVerifiycode", self.doSendVerifiycode) //演示后台模块间的rpc调用
+	self.GetServer().RegisterGO("GetCodeData", self.getCodeData) //演示后台模块间的rpc调用
 }
 
 func (self *SMS) Run(closeSig chan bool) {
@@ -192,7 +193,10 @@ func (self *SMS)sendcloud(phone string,smsCode int64)(string){
 	}
 }
 
-func (self *SMS) doSendVerifiycode(phone string,purpose string,extra map[string]interface{}) (string, string){
+/**
+发送验证码
+ */
+func (self *SMS)doSendVerifiycode(session gate.Session,phone string,purpose string,extra map[string]interface{}) (string, string){
 	conn:=utils.GetRedisFactory().GetPool(self.RedisUrl).Get()
 	defer conn.Close()
 	ttl, err := redis.Int64(conn.Do("TTL",fmt.Sprintf(MobileTTLFormat,phone)))
@@ -238,9 +242,31 @@ func (self *SMS) doSendVerifiycode(phone string,purpose string,extra map[string]
 	if err != nil {
 		return "",err.Error()
 	}
-	_, err = conn.Do("EXPIRE",fmt.Sprintf(MobileSmsCodeFormat,phone,smsCode),self.TTL)
+	_, err = conn.Do("EXPIRE",fmt.Sprintf(MobileSmsCodeFormat,phone,smsCode),self.TTL*5)
 	if err != nil {
 		return "",err.Error()
 	}
 	return "验证码发送成功",""
+}
+
+/**
+获取验证码参数
+如果验证码已过期将返回失败
+ */
+func (self *SMS)getCodeData(session gate.Session,phone string,smsCode int64,del bool)(map[string]interface{},string){
+	conn:=utils.GetRedisFactory().GetPool(self.RedisUrl).Get()
+	defer conn.Close()
+	r, err := redis.Bytes(conn.Do("GET",fmt.Sprintf(MobileSmsCodeFormat,phone,smsCode)))
+	if err != nil {
+		return nil,err.Error()
+	}
+	if del{
+		conn.Do("DEL",fmt.Sprintf(MobileSmsCodeFormat,phone,smsCode))
+	}
+	savedatas:=map[string]interface{}{}
+	err=json.Unmarshal(r,&savedatas)
+	if err!=nil{
+		return nil,err.Error()
+	}
+	return savedatas,""
 }
