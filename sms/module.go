@@ -211,7 +211,14 @@ func (self *SMS)doSendVerifiycode(session gate.Session,phone string,purpose stri
 	if self.Ailyun!=nil{
 		errstr:=self.aliyun(phone,smsCode)
 		if errstr!=""{
-			return "",errstr
+			if self.SendCloud!=nil{
+				errstr:=self.sendcloud(phone,smsCode)
+				if errstr!=""{
+					return "",errstr
+				}
+			}else{
+				return "",errstr
+			}
 		}
 	}else if self.SendCloud!=nil{
 		errstr:=self.sendcloud(phone,smsCode)
