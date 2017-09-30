@@ -17,17 +17,17 @@ package sms
 import "testing"
 
 func TestSendCloudSignature(t *testing.T) {
-	param:=map[string]string{
-		"smsCode":"123456",
-		"content":"大家好",
+	param := map[string]string{
+		"smsCode": "123456",
+		"content": "大家好",
 	}
-	t.Fatal(SendCloudSignature("sss",param))
+	t.Fatal(SendCloudSignature("sss", param))
 }
 
 func TestAliyunPOPSignature(t *testing.T) {
-	param:=map[string]string{
-		"smsCode":"123456",
-		"content":"大家好",
+	param := map[string]string{
+		"smsCode": "123456",
+		"content": "大家好",
 	}
-	t.Fatal(AliyunPOPSignature("POST","sss","SSS",param))
+	t.Fatal(AliyunPOPSignature("POST", "sss", "SSS", param))
 }

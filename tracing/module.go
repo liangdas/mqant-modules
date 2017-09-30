@@ -4,11 +4,11 @@
 package tracing
 
 import (
-	"net"
-	"github.com/liangdas/mqant/log"
 	"github.com/liangdas/mqant/conf"
+	"github.com/liangdas/mqant/log"
 	"github.com/liangdas/mqant/module"
 	"github.com/liangdas/mqant/module/base"
+	"net"
 	"time"
 )
 
@@ -34,13 +34,12 @@ func (self *tracing) OnInit(app module.App, settings *conf.ModuleSettings) {
 
 }
 
-
 func (self *tracing) Run(closeSig chan bool) {
 	// switch 类似 if 可以带上一个短语句
-	StoreFile:=self.GetModuleSettings().Settings["StoreFile"].(string)
-	URL:=self.GetModuleSettings().Settings["URL"].(string)
-	CollectorAddr:=self.GetModuleSettings().Settings["CollectorAddr"].(string)
-	HTTPAddr:=self.GetModuleSettings().Settings["HTTPAddr"].(string)
+	StoreFile := self.GetModuleSettings().Settings["StoreFile"].(string)
+	URL := self.GetModuleSettings().Settings["URL"].(string)
+	CollectorAddr := self.GetModuleSettings().Settings["CollectorAddr"].(string)
+	HTTPAddr := self.GetModuleSettings().Settings["HTTPAddr"].(string)
 	//StoreFile:="/tmp/appdash.gob"
 	//switch os := runtime.GOOS; os {
 	//case "darwin":
@@ -53,35 +52,35 @@ func (self *tracing) Run(closeSig chan bool) {
 	//	// plan9, windows...
 	//	fmt.Printf("%s.", os)
 	//}
-	cmd:=&ServeCmd{
-		URL           :URL,
-		CollectorAddr :CollectorAddr,
-		HTTPAddr      :HTTPAddr,
+	cmd := &ServeCmd{
+		URL:           URL,
+		CollectorAddr: CollectorAddr,
+		HTTPAddr:      HTTPAddr,
 
-		StoreFile     :StoreFile,
-		PersistInterval	: time.Second*2,
+		StoreFile:       StoreFile,
+		PersistInterval: time.Second * 2,
 
-		Debug 	:false,
-		Trace	:false,
+		Debug: false,
+		Trace: false,
 
-		DeleteAfter :time.Second*60*10,
+		DeleteAfter: time.Second * 60 * 10,
 
-		LimitMax :10,
+		LimitMax: 10,
 	}
-	l, err := net.Listen("tcp",cmd.HTTPAddr)
+	l, err := net.Listen("tcp", cmd.HTTPAddr)
 	if err != nil {
-		log.Info("tracing server ",err.Error())
-	}else{
+		log.Info("tracing server ", err.Error())
+	} else {
 		go func() {
-			err:=cmd.Execute(l)
-			if err!=nil{
-				log.Error("tracing server ",err.Error())
+			err := cmd.Execute(l)
+			if err != nil {
+				log.Error("tracing server ", err.Error())
 			}
 		}()
 	}
 	<-closeSig
 	log.Info("tracing server Shutting down...")
-	if l!=nil{
+	if l != nil {
 		l.Close()
 	}
 }

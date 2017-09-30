@@ -5,8 +5,8 @@ import (
 	"crypto/tls"
 	"encoding/base64"
 	"fmt"
-	"io/ioutil"
 	"github.com/liangdas/mqant/log"
+	"io/ioutil"
 	"net"
 	"net/http"
 	"net/url"
@@ -42,10 +42,9 @@ type ServeCmd struct {
 	BasicAuth string `long:"basic-auth" description:"if set to 'user:passwd', require HTTP Basic Auth for web app"`
 }
 
-
 // Execute execudes the commands with the given arguments and returns an error,
 // if any.
-func (c *ServeCmd) Execute(httplisten net.Listener) (error ){
+func (c *ServeCmd) Execute(httplisten net.Listener) error {
 	var (
 		memStore = appdash.NewMemoryStore()
 		Store    = appdash.Store(memStore)
@@ -71,7 +70,7 @@ func (c *ServeCmd) Execute(httplisten net.Listener) (error ){
 		if c.PersistInterval != 0 {
 			go func() {
 				if err := appdash.PersistEvery(memStore, c.PersistInterval, c.StoreFile); err != nil {
-					log.Error("appdash.PersistEvery",err.Error())
+					log.Error("appdash.PersistEvery", err.Error())
 				}
 			}()
 		}
@@ -87,7 +86,7 @@ func (c *ServeCmd) Execute(httplisten net.Listener) (error ){
 
 	if c.LimitMax > 0 {
 		Store = &appdash.LimitStore{
-			Max: c.LimitMax,
+			Max:         c.LimitMax,
 			DeleteStore: memStore,
 		}
 	}
@@ -118,7 +117,6 @@ func (c *ServeCmd) Execute(httplisten net.Listener) (error ){
 	} else {
 		h = app
 	}
-
 
 	var l net.Listener
 	var proto string
@@ -169,7 +167,6 @@ func (c *ServeCmd) Execute(httplisten net.Listener) (error ){
 			log.Warning("tcp_server tls :%v", err)
 		}
 	}
-
 
 	log.Info("appdash HTTP server listening on %s", c.HTTPAddr)
 	return http.Serve(httplisten, h)
