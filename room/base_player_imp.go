@@ -83,7 +83,6 @@ func (self *BasePlayerImp) GetLastRequestDate() int64 {
 	return self.lastRequestDate
 }
 
-
 func (self *BasePlayerImp) Session() gate.Session {
 	return self.session
 }
