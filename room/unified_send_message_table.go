@@ -49,12 +49,12 @@ func (this *UnifiedSendMessageTable) GetBindPlayer(session gate.Session) BasePla
 	for _, player := range this.tableimp.GetSeats() {
 		if (player != nil) && (player.Session() != nil) {
 			if player.Session().IsGuest() {
-				if player.Session().GetSessionid() == session.GetSessionid() {
+				if player.Session().GetSessionId() == session.GetSessionId() {
 					player.OnRequest(session)
 					return player
 				}
 			} else {
-				if player.Session().GetUserid() == session.GetUserid() {
+				if player.Session().GetUserId() == session.GetUserId() {
 					player.OnRequest(session)
 					return player
 				}
@@ -135,10 +135,10 @@ func (this *UnifiedSendMessageTable) mergeGate() (map[string][]string){
 			netBroken, _ := role.GetNetBroken()
 			if !netBroken {
 				//未断网
-				if _,ok:=merge[role.Session().GetServerid()];ok{
-					merge[role.Session().GetServerid()]=append(merge[role.Session().GetServerid()],role.Session().GetSessionid())
+				if _,ok:=merge[role.Session().GetServerId()];ok{
+					merge[role.Session().GetServerId()]=append(merge[role.Session().GetServerId()],role.Session().GetSessionId())
 				}else{
-					merge[role.Session().GetServerid()]=[]string{role.Session().GetSessionid()}
+					merge[role.Session().GetServerId()]=[]string{role.Session().GetSessionId()}
 				}
 			}
 		}
@@ -248,7 +248,7 @@ func (this *UnifiedSendMessageTable) ExecuteCallBackMsg() {
 				for _, sessionId := range msg.players {
 					for _, role := range this.tableimp.GetSeats() {
 						if role != nil {
-							if (role.Session().GetSessionid() == sessionId) && (role.Session() != nil) {
+							if (role.Session().GetSessionId() == sessionId) && (role.Session() != nil) {
 								netBroken, _ := role.GetNetBroken()
 								if !netBroken {
 									var e string=""
