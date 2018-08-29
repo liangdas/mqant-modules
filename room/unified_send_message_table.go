@@ -182,7 +182,7 @@ func (this *UnifiedSendMessageTable) ExecuteCallBackMsg() {
 						log.Warning("SendBatch error %v", e);
 					}
 					if msg.needReply{
-						result,err:=server.Call("SendBatch",sessionids,*msg.topic, *msg.body)
+						result,err:=server.Call("SendBatch",nil,sessionids,*msg.topic, *msg.body)
 						if err != "" {
 							log.Warning("SendBatch error %v %v",serverid,err);
 						} else {
@@ -201,7 +201,7 @@ func (this *UnifiedSendMessageTable) ExecuteCallBackMsg() {
 							}
 						}
 					}else{
-						err:=server.CallNR("SendBatch",sessionids,*msg.topic, *msg.body)
+						err:=server.CallNR("SendBatch",nil,sessionids,*msg.topic, *msg.body)
 						if err != nil {
 							log.Warning("SendBatch error %v %v",serverid,err.Error());
 						}
