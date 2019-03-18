@@ -73,9 +73,11 @@ func (self *Room) CreateById(module module.RPCModule, tableId int) (BaseTable, e
 }
 
 func (self *Room) GetTable(tableId int) BaseTable {
+	self.lock.Lock()
 	if table, ok := self.tables[tableId]; ok {
 		return table
 	}
+	self.lock.Unlock()
 	return nil
 }
 
