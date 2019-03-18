@@ -49,6 +49,7 @@ func (self *Room) Create(module module.RPCModule) (BaseTable, error) {
 	self.lock.Lock()
 	self.index++
 	if table, ok := self.tables[self.index]; ok {
+		self.lock.Unlock()
 		return table, nil
 	}
 	self.lock.Unlock()
@@ -65,6 +66,7 @@ func (self *Room) Create(module module.RPCModule) (BaseTable, error) {
 func (self *Room) CreateById(module module.RPCModule, tableId int) (BaseTable, error) {
 	self.lock.Lock()
 	if table, ok := self.tables[tableId]; ok {
+		self.lock.Unlock()
 		return table, nil
 	}
 	self.lock.Unlock()
@@ -81,6 +83,7 @@ func (self *Room) CreateById(module module.RPCModule, tableId int) (BaseTable, e
 func (self *Room) GetTable(tableId int) BaseTable {
 	self.lock.Lock()
 	if table, ok := self.tables[tableId]; ok {
+		self.lock.Unlock()
 		return table
 	}
 	self.lock.Unlock()
@@ -92,13 +95,11 @@ func (self *Room) GetTable(tableId int) BaseTable {
 */
 func (self *Room) GetUsableTable() (BaseTable, error) {
 	//先尝试获取没有满的房间
-	self.lock.Lock()
 	for _, table := range self.tables {
 		if self.usableTable(table) {
 			return table, nil
 		}
 	}
-	self.lock.Unlock()
 	//没有找到已创建的空房间,新创建一个
 	table, err := self.Create(self.module)
 	if err != nil {
