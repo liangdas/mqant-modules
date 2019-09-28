@@ -33,7 +33,7 @@ type SMS struct {
 
 func (self *SMS) GetType() string {
 	//很关键,需要与配置文件中的Module配置对应
-	return "SMS"
+	return "sms"
 }
 func (self *SMS) Version() string {
 	//可以在监控时了解代码版本
