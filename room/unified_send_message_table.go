@@ -182,7 +182,7 @@ func (this *UnifiedSendMessageTable) ExecuteCallBackMsg() {
 						log.Warning("SendBatch error %v", e);
 					}
 					if msg.needReply{
-						result,err:=server.Call("SendBatch",nil,sessionids,*msg.topic, *msg.body)
+						result,err:=server.Call(nil,"SendBatch",nil,sessionids,*msg.topic, *msg.body)
 						if err != "" {
 							log.Warning("SendBatch error %v %v",serverid,err);
 						} else {
