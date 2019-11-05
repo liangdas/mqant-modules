@@ -98,9 +98,8 @@ github.com/kr/pretty v0.1.0/go.mod h1:dAy3ld7l9f0ibDNOQOHHMYYIIbhfbHSm3C4ZsoJORN
 github.com/kr/pty v1.1.1/go.mod h1:pFQYn66WHrOpPYNljwOMqo10TkYh1fy3cYio2l3bCsQ=
 github.com/kr/text v0.1.0 h1:45sCR5RtlFHMR4UwH9sdQ5TC8v0qDQCHnXt+kaKSTVE=
 github.com/kr/text v0.1.0/go.mod h1:4Jbv+DJW3UT/LiOwJeYQe1efqtUx/iVham/4vfdArNI=
-github.com/liangdas/mqant v2.5.0+incompatible h1:uHlk6y8UbmNR+W2yR3Xtw3BoMYdcytxgkqAFhwQ0rkU=
-github.com/liangdas/mqant v2.5.0+incompatible/go.mod h1:I8tAjiMZ7Wi4xw3jxO7TN8MU8oRTYvctIYq//EW5Wpg=
-github.com/liangdas/mqant v2.5.1+incompatible/go.mod h1:I8tAjiMZ7Wi4xw3jxO7TN8MU8oRTYvctIYq//EW5Wpg=
+github.com/liangdas/mqant v1.0.0 h1:u19qdHioVbJveUrj1Opy7ck/+2LttLxUZlOYw1C7iwE=
+github.com/liangdas/mqant v1.0.0/go.mod h1:4/pu3k0bBggF0ljMP/ONGXXJrXyunNfJGmR2iLCyKLE=
 github.com/mattn/go-colorable v0.0.9/go.mod h1:9vuHe8Xs5qXnSaW/c/ABM9alt+Vo+STaOChaDxuIBZU=
 github.com/mattn/go-isatty v0.0.3/go.mod h1:M+lRXTBqGeGNdLjl/ufCoiOlB5xdOkqRJdNxMWT7Zi4=
 github.com/matttproud/golang_protobuf_extensions v1.0.1/go.mod h1:D8He9yQNgCq6Z5Ld7szi9bcBfOoFv/3dc6xSMkL2PC0=
