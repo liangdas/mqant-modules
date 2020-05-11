@@ -14,14 +14,17 @@
 package room
 
 import (
-	"container/list"
-	"github.com/liangdas/mqant/module"
+	"context"
 	"fmt"
 	"github.com/liangdas/mqant/gate"
+	"github.com/liangdas/mqant/log"
+	"github.com/liangdas/mqant/module"
 	"github.com/yireyun/go-queue"
 	"strings"
-	"github.com/liangdas/mqant/log"
+	"time"
 )
+
+type Filter func()
 
 type CallBackMsg struct {
 	notify  	bool     	//是否是广播
@@ -31,9 +34,7 @@ type CallBackMsg struct {
 	body    	*[]byte
 }
 type TableImp interface {
-	OnNetBroken(BasePlayer)
-	GetSeats() []BasePlayer
-	GetViewer() *list.List
+	GetSeats() map[string]BasePlayer
 	GetModule() module.RPCModule
 }
 type UnifiedSendMessageTable struct {
@@ -41,25 +42,22 @@ type UnifiedSendMessageTable struct {
 	tableimp      TableImp
 }
 
-func (this *UnifiedSendMessageTable) UnifiedSendMessageTableInit(tableimp TableImp) {
-	this.queue_message = queue.NewQueue(256)
+func (this *UnifiedSendMessageTable) UnifiedSendMessageTableInit(tableimp TableImp,Capaciity uint32) {
+	this.queue_message = queue.NewQueue(Capaciity)
 	this.tableimp = tableimp
 }
-func (this *UnifiedSendMessageTable) GetBindPlayer(session gate.Session) BasePlayer {
+func (this *UnifiedSendMessageTable) FindPlayer(session gate.Session) BasePlayer {
 	for _, player := range this.tableimp.GetSeats() {
 		if (player != nil) && (player.Session() != nil) {
 			if player.Session().IsGuest() {
 				if player.Session().GetSessionId() == session.GetSessionId() {
-					player.OnRequest(session)
 					return player
 				}
 			} else {
 				if player.Session().GetUserId() == session.GetUserId() {
-					player.OnRequest(session)
 					return player
 				}
 			}
-
 		}
 	}
 	return nil
@@ -132,40 +130,25 @@ func (this *UnifiedSendMessageTable) mergeGate() (map[string][]string){
 	merge:=map[string][]string{}
 	for _, role := range this.tableimp.GetSeats() {
 		if role != nil && role.Session() != nil {
-			netBroken, _ := role.GetNetBroken()
-			if !netBroken {
-				//未断网
-				if _,ok:=merge[role.Session().GetServerId()];ok{
-					merge[role.Session().GetServerId()]=append(merge[role.Session().GetServerId()],role.Session().GetSessionId())
-				}else{
-					merge[role.Session().GetServerId()]=[]string{role.Session().GetSessionId()}
-				}
+			//未断网
+			if _,ok:=merge[role.Session().GetServerId()];ok{
+				merge[role.Session().GetServerId()]=append(merge[role.Session().GetServerId()],role.Session().GetSessionId())
+			}else{
+				merge[role.Session().GetServerId()]=[]string{role.Session().GetSessionId()}
 			}
 		}
 	}
-	//通知观众玩家
-	//for e := this.tableimp.GetViewer().Front(); e != nil; e = e.Next() {
-	//	session:=e.Value.(gate.Session)
-	//	if session != nil {
-	//		if plist,ok:=merge[session.GetServerid()];ok{
-	//			plist=append(plist,session.GetSessionid())
-	//		}else{
-	//			plist=[]string{session.GetSessionid()}
-	//			merge[session.GetServerid()]=plist
-	//		}
-	//	}
-	//}
 	return merge
 }
 
 /**
 【每帧调用】统一发送所有消息给各个客户端
 */
-func (this *UnifiedSendMessageTable) ExecuteCallBackMsg() {
+func (this *UnifiedSendMessageTable) ExecuteCallBackMsg(span log.TraceSpan) {
 	var merge map[string][]string;
 	ok := true
 	queue := this.queue_message
-	index := 0
+	var index = 0
 	for ok {
 		val, _ok, _ := queue.Get()
 		index++
@@ -182,89 +165,35 @@ func (this *UnifiedSendMessageTable) ExecuteCallBackMsg() {
 						log.Warning("SendBatch error %v", e);
 					}
 					if msg.needReply{
-						result,err:=server.Call(nil,"SendBatch",nil,sessionids,*msg.topic, *msg.body)
+						ctx, _ := context.WithTimeout(context.TODO(), time.Second*3)
+						result,err:=server.Call(ctx,"SendBatch",span,sessionids,*msg.topic, *msg.body)
 						if err != "" {
 							log.Warning("SendBatch error %v %v",serverid,err);
 						} else {
 							if int(result.(int64))<len(plist){
-								//有连接断了，牌桌可以广播一个心跳包去查一下
-								this.NotifyHeartbeat()
-							}
-							for _, role := range this.tableimp.GetSeats() {
-								if role != nil && role.Session() != nil {
-									netBroken, _ := role.GetNetBroken()
-									if !netBroken {
-										//更新一下
-										role.OnResponse(role.Session())
-									}
-								}
+								//有连接断了
 							}
 						}
 					}else{
-						err:=server.CallNR("SendBatch",nil,sessionids,*msg.topic, *msg.body)
+						err:=server.CallNR("SendBatch",sessionids,*msg.topic, *msg.body)
 						if err != nil {
 							log.Warning("SendBatch error %v %v",serverid,err.Error());
 						}
 					}
 
 				}
-				//for _, role := range this.tableimp.GetSeats() {
-				//	if role != nil && role.Session() != nil {
-				//		netBroken, _ := role.GetNetBroken()
-				//		if !netBroken {
-				//			var e string=""
-				//			if msg.needReply{
-				//				e= role.Session().Send(*msg.topic, *msg.body)
-				//			}else{
-				//				e = role.Session().SendNR(*msg.topic, *msg.body)
-				//			}
-				//			if e != "" {
-				//				if this.tableimp != nil {
-				//					this.tableimp.OnNetBroken(role)
-				//				}
-				//			} else {
-				//				role.OnResponse(role.Session())
-				//			}
-				//		}
-				//
-				//	}
-				//
-				//}
-
-				//通知观众玩家
-				//for e := this.tableimp.GetViewer().Front(); e != nil; e = e.Next() {
-				//	var err string=""
-				//	if msg.needReply{
-				//		err = e.Value.(gate.Session).Send(*msg.topic, *msg.body)
-				//	}else{
-				//		err = e.Value.(gate.Session).SendNR(*msg.topic, *msg.body)
-				//	}
-				//
-				//	if err != "" {
-				//		this.tableimp.GetViewer().Remove(e)
-				//	}
-				//}
 			} else {
 				for _, sessionId := range msg.players {
 					for _, role := range this.tableimp.GetSeats() {
 						if role != nil {
-							if (role.Session().GetSessionId() == sessionId) && (role.Session() != nil) {
-								netBroken, _ := role.GetNetBroken()
-								if !netBroken {
-									var e string=""
-									if msg.needReply{
-										e = role.Session().Send(*msg.topic, *msg.body)
-									}else{
-										e = role.Session().SendNR(*msg.topic, *msg.body)
-									}
-
-									if e != "" {
-										if this.tableimp != nil {
-											this.tableimp.OnNetBroken(role)
-										}
-									} else {
+							if (role.Session() != nil) && (role.Session().GetSessionId() == sessionId)  {
+								if msg.needReply{
+									e := role.Session().Send(*msg.topic, *msg.body)
+									if e==""{
 										role.OnResponse(role.Session())
 									}
+								}else{
+									_ = role.Session().SendNR(*msg.topic, *msg.body)
 								}
 							}
 						}
@@ -275,27 +204,4 @@ func (this *UnifiedSendMessageTable) ExecuteCallBackMsg() {
 		}
 		ok = _ok
 	}
-}
-/**
-给房间内的所有客户端发送一个心跳包检测
- */
-func (this *UnifiedSendMessageTable) NotifyHeartbeat() error {
-	for _, role := range this.tableimp.GetSeats() {
-		if role != nil && role.Session() != nil {
-			netBroken, _ := role.GetNetBroken()
-			if !netBroken {
-				e:= role.Session().Send("Table/HB", []byte("hb"))
-				if e != "" {
-					if this.tableimp != nil {
-						this.tableimp.OnNetBroken(role)
-					}
-				} else {
-					role.OnResponse(role.Session())
-				}
-			}
-
-		}
-
-	}
-	return nil
 }

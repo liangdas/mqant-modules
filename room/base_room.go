@@ -20,129 +20,42 @@ import (
 
 type Room struct {
 	module      module.RPCModule
-	lock        *sync.RWMutex
-	tables      map[int]BaseTable
-	newTable    func(module module.RPCModule, tableId int) (BaseTable, error)
-	usableTable func(BaseTable) bool
+	tables      sync.Map
 	roomId      int
-	index       int
-	max         int
 }
 
-func NewRoom(module module.RPCModule, roomId int, newTable func(module module.RPCModule, tableId int) (BaseTable, error), usableTable func(BaseTable) bool) *Room {
+type NewTableFunc func(module module.RPCModule, tableId string) (BaseTable, error)
+
+func NewRoom(module module.RPCModule) *Room {
 	room := &Room{
 		module:      module,
-		lock:        new(sync.RWMutex),
-		tables:      map[int]BaseTable{},
-		newTable:    newTable,
-		usableTable: usableTable,
-		roomId:      roomId,
-		index:       0,
-		max:         0,
 	}
 	return room
 }
 func (self *Room) RoomId() int {
 	return self.roomId
 }
-func (self *Room) Create(module module.RPCModule) (BaseTable, error) {
-	self.lock.Lock()
-	self.index++
-	if table, ok := self.tables[self.index]; ok {
-		self.lock.Unlock()
-		return table, nil
+
+func (self *Room) CreateById(module module.RPCModule, tableId string,newTablefunc NewTableFunc) (BaseTable, error) {
+	if table, ok := self.tables.Load(tableId); ok {
+		return table.(BaseTable), nil
 	}
-	self.lock.Unlock()
-	table, err := self.CreateById(module, self.index)
+	table, err := newTablefunc(module, tableId)
 	if err != nil {
 		return nil, err
 	}
-	self.lock.Lock()
-	self.tables[table.TableId()] = table
-	self.lock.Unlock()
+	self.tables.Store(table.TableId(),table)
 	return table, nil
 }
 
-func (self *Room) CreateById(module module.RPCModule, tableId int) (BaseTable, error) {
-	self.lock.Lock()
-	if table, ok := self.tables[tableId]; ok {
-		self.lock.Unlock()
-		return table, nil
+func (self *Room) GetTable(tableId string) BaseTable {
+	if table, ok := self.tables.Load(tableId); ok {
+		return table.(BaseTable)
 	}
-	self.lock.Unlock()
-	table, err := self.newTable(module, tableId)
-	if err != nil {
-		return nil, err
-	}
-	self.lock.Lock()
-	self.tables[tableId] = table
-	self.lock.Unlock()
-	return table, nil
-}
-
-func (self *Room) GetTable(tableId int) BaseTable {
-	self.lock.Lock()
-	if table, ok := self.tables[tableId]; ok {
-		self.lock.Unlock()
-		return table
-	}
-	self.lock.Unlock()
 	return nil
 }
 
-/**
-获取一个可用的桌
-*/
-func (self *Room) GetUsableTable() (BaseTable, error) {
-	//先尝试获取没有满的房间
-	for _, table := range self.tables {
-		if self.usableTable(table) {
-			return table, nil
-		}
-	}
-	//没有找到已创建的空房间,新创建一个
-	table, err := self.Create(self.module)
-	if err != nil {
-		return nil, err
-	}
-	return table, nil
+func (self *Room) DestroyTable(tableId string) error {
+	self.tables.Delete(tableId)
+	return nil
 }
-
-//func (self *Room)GetEmptyTable()(BaseTable,error){
-//	for _,table:=range self.tables{
-//		if table.State()==Uninitialized{
-//			return table,nil
-//		}else if table.State()==Stoped{
-//			return table,nil
-//		}
-//	}
-//	//没有找到已创建的空房间,新创建一个
-//	table,err:= self.Create(self.module)
-//	if err!=nil{
-//		return nil,err
-//	}
-//	return table,nil
-//}
-///**
-//获取一个未满的桌
-// */
-//func (self *Room)GetNoFullTable()(BaseTable,error){
-//	//先尝试获取没有满的房间
-//	for _,table:=range self.tables{
-//		if !table.Empty()&&!table.Full(){
-//			return table,nil
-//		}
-//	}
-//	//再尝试获取可能是空的房间
-//	for _,table:=range self.tables{
-//		if !table.Full(){
-//			return table,nil
-//		}
-//	}
-//	//没有找到已创建的空房间,新创建一个
-//	table,err:= self.Create(self.module)
-//	if err!=nil{
-//		return nil,err
-//	}
-//	return table,nil
-//}

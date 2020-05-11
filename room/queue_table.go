@@ -15,11 +15,10 @@ package room
 
 import (
 	"fmt"
-	"github.com/liangdas/mqant/log"
 	"github.com/yireyun/go-queue"
 	"reflect"
-	"runtime"
 	"sync"
+	"github.com/pkg/errors"
 )
 
 type QueueMsg struct {
@@ -30,7 +29,8 @@ type QueueReceive interface {
 	Receive(msg *QueueMsg, index int)
 }
 type QueueTable struct {
-	functions       map[string]interface{}
+	opts 				Options
+	functions       map[string]reflect.Value
 	receive         QueueReceive
 	queue0          *queue.EsQueue
 	queue1          *queue.EsQueue
@@ -38,10 +38,11 @@ type QueueTable struct {
 	lock            *sync.RWMutex
 }
 
-func (self *QueueTable) QueueInit() {
-	self.functions = map[string]interface{}{}
-	self.queue0 = queue.NewQueue(256)
-	self.queue1 = queue.NewQueue(256)
+func (self *QueueTable) QueueInit(opts ...Option) {
+	self.opts = newOptions(opts...)
+	self.functions = map[string]reflect.Value{}
+	self.queue0 = queue.NewQueue(self.opts.Capaciity)
+	self.queue1 = queue.NewQueue(self.opts.Capaciity)
 	self.current_w_queue = 0
 	self.lock = new(sync.RWMutex)
 }
@@ -54,17 +55,20 @@ func (self *QueueTable) Register(id string, f interface{}) {
 		panic(fmt.Sprintf("function id %v: already registered", id))
 	}
 
-	self.functions[id] = f
+	self.functions[id] = reflect.ValueOf(f)
 }
 
 /**
 协成安全,任意协成可调用
 */
 func (self *QueueTable) PutQueue(_func string, params ...interface{}) error {
-	ok, quantity := self.wqueue().Put(&QueueMsg{
+	q:=self.wqueue()
+	self.lock.Lock()
+	ok, quantity := q.Put(&QueueMsg{
 		Func:   _func,
 		Params: params,
 	})
+	self.lock.Unlock()
 	if !ok {
 		return fmt.Errorf("Put Fail, quantity:%v\n", quantity)
 	} else {
@@ -118,13 +122,31 @@ func (self *QueueTable) ExecuteEvent(arge interface{}) {
 				msg := val.(*QueueMsg)
 				function, ok := self.functions[msg.Func]
 				if !ok {
-					fmt.Println(fmt.Sprintf("Remote function(%s) not found", msg.Func))
-					continue
+					//fmt.Println(fmt.Sprintf("Remote function(%s) not found", msg.Func))
+					if self.opts.NoFound!=nil{
+						fc,err:=self.opts.NoFound(msg)
+						if err!=nil{
+							self.opts.RecoverHandle(msg,err)
+							continue
+						}
+						function=fc
+					}else{
+						if self.opts.RecoverHandle!=nil{
+							self.opts.RecoverHandle(msg,errors.Errorf("Remote function(%s) not found", msg.Func))
+						}
+						continue
+					}
 				}
-				f := reflect.ValueOf(function)
+				f := function
 				in := make([]reflect.Value, len(msg.Params))
 				for k, _ := range in {
-					in[k] = reflect.ValueOf(msg.Params[k])
+					switch v2 := msg.Params[k].(type) { //多选语句switch
+						case nil:
+							in[k] = reflect.Zero(f.Type().In(k))
+						default:
+							in[k] = reflect.ValueOf(v2)
+					}
+					//in[k] = reflect.ValueOf(msg.Params[k])
 				}
 				_runFunc := func() {
 					defer func() {
@@ -137,13 +159,26 @@ func (self *QueueTable) ExecuteEvent(arge interface{}) {
 							case error:
 								rn = r.(error).Error()
 							}
-							buf := make([]byte, 1024)
-							l := runtime.Stack(buf, false)
-							errstr := string(buf[:l])
-							log.Error("table qeueu event(%s) exec fail error:%s \n ----Stack----\n %s", msg.Func, rn, errstr)
+							//buf := make([]byte, 1024)
+							//l := runtime.Stack(buf, false)
+							//errstr := string(buf[:l])
+							if self.opts.RecoverHandle!=nil{
+								self.opts.RecoverHandle(msg,errors.New(rn))
+							}
+							//log.Error("table qeueu event(%s) exec fail error:%s \n ----Stack----\n %s", msg.Func, rn, errstr)
 						}
 					}()
-					f.Call(in)
+					out:=f.Call(in)
+					if self.opts.ErrorHandle!=nil{
+						if len(out)==1{
+							value, ok := out[0].Interface().(error)
+							if ok {
+								if value!=nil{
+									self.opts.ErrorHandle(msg,value)
+								}
+							}
+						}
+					}
 				}
 				_runFunc()
 			}

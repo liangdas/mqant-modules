@@ -20,13 +20,15 @@ import (
 
 type BasePlayerImp struct {
 	session         gate.Session
-	sitDown         bool  //是否已坐下 ,如果网络断开会设置为false,当网络连接成功以后需要重新坐下\
-	netBroken       bool  //网络中断
-	netBrokenDate   int64 //网络中断时间，超过60秒就踢出房间或者做其他处理 单位/秒
-	lastRequestDate int64 //玩家最后一次请求时间	单位秒
+	lastNewsDate int64 //玩家最后一次成功通信时间	单位秒
+	body            interface{}
 }
 
-func (self *BasePlayerImp) Bind() bool {
+func (self *BasePlayerImp) Type() string {
+	return "BasePlayer"
+}
+
+func (self *BasePlayerImp) IsBind() bool {
 	if self.session == nil {
 		return false
 	} else {
@@ -34,16 +36,9 @@ func (self *BasePlayerImp) Bind() bool {
 	}
 }
 
-func (self *BasePlayerImp) OnBind(session gate.Session) BasePlayer {
+func (self *BasePlayerImp) Bind(session gate.Session) BasePlayer {
+	self.lastNewsDate = time.Now().Unix()
 	self.session = session
-	self.netBroken = false
-	return self
-}
-func (self *BasePlayerImp) OnUnBind() BasePlayer {
-	self.session = nil
-	self.OnSitUp()
-	self.lastRequestDate = 0
-	self.OnNetBroken()
 	return self
 }
 
@@ -52,8 +47,7 @@ func (self *BasePlayerImp) OnUnBind() BasePlayer {
 */
 func (self *BasePlayerImp) OnRequest(session gate.Session) {
 	self.session = session
-	self.lastRequestDate = time.Now().Unix()
-	self.netBroken = false
+	self.lastNewsDate = time.Now().Unix()
 }
 
 /**
@@ -61,32 +55,20 @@ func (self *BasePlayerImp) OnRequest(session gate.Session) {
 */
 func (self *BasePlayerImp) OnResponse(session gate.Session) {
 	self.session = session
-	self.lastRequestDate = time.Now().Unix()
-	self.netBroken = false
-}
-func (self *BasePlayerImp) OnSitDown() {
-	self.sitDown = true
+	self.lastNewsDate = time.Now().Unix()
 }
 
-func (self *BasePlayerImp) OnSitUp() {
-	self.sitDown = false
+func (self *BasePlayerImp) GetLastReqResDate() int64 {
+	return self.lastNewsDate
+}
+func (self *BasePlayerImp) Body() interface{} {
+	return self.body
 }
 
-func (self *BasePlayerImp) OnNetBroken() {
-	self.netBrokenDate = time.Now().Unix()
-	self.netBroken = true
-}
-func (self *BasePlayerImp) GetNetBroken() (bool, int64) {
-	return self.netBroken, self.netBrokenDate
-}
-func (self *BasePlayerImp) GetLastRequestDate() int64 {
-	return self.lastRequestDate
+func (self *BasePlayerImp) SetBody(body interface{}) {
+	self.body = body
 }
 
 func (self *BasePlayerImp) Session() gate.Session {
 	return self.session
-}
-
-func (self *BasePlayerImp) SitDown() bool {
-	return self.sitDown
 }

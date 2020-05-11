@@ -14,10 +14,7 @@
 package room
 
 import (
-	"fmt"
 	"math/rand"
-	"strconv"
-	"strings"
 	"time"
 )
 
@@ -31,26 +28,4 @@ func GetRandomString(lenght int) string {
 		result = append(result, bytes[r.Intn(len(bytes))])
 	}
 	return string(result)
-}
-
-//## bigRoomId
-//BR:{serverId}:{tableId}:{TransactionId}
-//BR:Tacit@Tacit001:100:1235233
-func BuildBigRoomId(serverId string, tableId int, transactionId int) string {
-	return fmt.Sprintf("BR:%s:%d:%d", serverId, tableId, transactionId)
-}
-func ParseBigRoomId(bigroomId string) (string, int, int, error) {
-	s := strings.Split(bigroomId, ":")
-	if len(s) != 4 {
-		return "", -1, 0, fmt.Errorf("The bigroomId data structure is incorrect")
-	}
-	tableId, error := strconv.Atoi(s[2])
-	if error != nil {
-		return "", -1, 0, error
-	}
-	transactionId, error := strconv.Atoi(s[3])
-	if error != nil {
-		return "", -1, 0, error
-	}
-	return s[1], tableId, transactionId, nil
 }

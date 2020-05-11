@@ -25,11 +25,11 @@ var (
 	Stoped        = 4 //已停止状态
 )
 
+
+
 type BaseTable interface {
-	TableId() int
-	TransactionId() int                                         //事务ID一般在OnCreate创建 在OnDestroy销毁
-	AllowJoin() bool                                            //是否还允许加入
-	VerifyAccessAuthority(userId string, BigRoomId string) bool //访问权限校验
+	Options() 	Options
+	TableId() string
 
 	OnCreate()  //可以进行一些初始化的工作在table第一次被创建的时候调用
 	OnStart()   //table创建完成，但还不可与用户交互，无法接收用户消息 开始：onCreate()->onStart() onStop()->onRestart()->onStart()
@@ -41,6 +41,7 @@ type BaseTable interface {
 	OnTimeOut() //当table超时了
 
 	State() int //uninitialized active paused stoped destroyed
+	Runing() bool	//table是否在Runing中,只要在Runing中就能接收和处理消息
 	Create()
 	Start()
 	Stop()
@@ -56,22 +57,22 @@ type BaseTable interface {
 }
 
 type BasePlayer interface {
-	Bind() bool
-	OnBind(session gate.Session) BasePlayer
-	OnUnBind() BasePlayer
+	IsBind() bool
+	Bind(session gate.Session) BasePlayer
 	/**
-	玩家主动发请求时间
+	玩家主动发请求时触发
 	*/
 	OnRequest(session gate.Session)
 	/**
-	服务器主动发送消息给客户端的时间
+	服务器主动发送消息给玩家时触发
 	*/
 	OnResponse(session gate.Session)
-	OnSitDown()
-	OnSitUp()
-	OnNetBroken()
-	GetNetBroken() (bool, int64)
-	GetLastRequestDate() int64
+	/*
+	服务器跟玩家最后一次成功通信时间
+	 */
+	GetLastReqResDate() int64
+	Body() interface{}
+	SetBody(body interface{})
 	Session() gate.Session
-	SitDown() bool
+	Type() 		string
 }

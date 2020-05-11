@@ -20,10 +20,3 @@ func assertEqual(t *testing.T, val interface{}, exp interface{}) {
 		t.Errorf("Expected %v, got %v.", exp, val)
 	}
 }
-func TestBuildBigRoomId(t *testing.T) {
-	bigroom := BuildBigRoomId(9, 102, 11)
-	assertEqual(t, bigroom, "000901020011")
-
-	bigroom1 := BuildBigRoomId(9001, 1020, 11)
-	assertEqual(t, bigroom1, "900110200011")
-}
