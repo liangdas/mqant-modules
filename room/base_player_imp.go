@@ -19,9 +19,9 @@ import (
 )
 
 type BasePlayerImp struct {
-	session         gate.Session
+	session      gate.Session
 	lastNewsDate int64 //玩家最后一次成功通信时间	单位秒
-	body            interface{}
+	body         interface{}
 }
 
 func (self *BasePlayerImp) Type() string {

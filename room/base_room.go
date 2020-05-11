@@ -19,16 +19,16 @@ import (
 )
 
 type Room struct {
-	module      module.RPCModule
-	tables      sync.Map
-	roomId      int
+	module module.RPCModule
+	tables sync.Map
+	roomId int
 }
 
 type NewTableFunc func(module module.RPCModule, tableId string) (BaseTable, error)
 
 func NewRoom(module module.RPCModule) *Room {
 	room := &Room{
-		module:      module,
+		module: module,
 	}
 	return room
 }
@@ -36,7 +36,7 @@ func (self *Room) RoomId() int {
 	return self.roomId
 }
 
-func (self *Room) CreateById(module module.RPCModule, tableId string,newTablefunc NewTableFunc) (BaseTable, error) {
+func (self *Room) CreateById(module module.RPCModule, tableId string, newTablefunc NewTableFunc) (BaseTable, error) {
 	if table, ok := self.tables.Load(tableId); ok {
 		return table.(BaseTable), nil
 	}
@@ -44,7 +44,7 @@ func (self *Room) CreateById(module module.RPCModule, tableId string,newTablefun
 	if err != nil {
 		return nil, err
 	}
-	self.tables.Store(table.TableId(),table)
+	self.tables.Store(table.TableId(), table)
 	return table, nil
 }
 

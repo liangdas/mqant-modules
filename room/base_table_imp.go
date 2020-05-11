@@ -30,74 +30,76 @@ type QTable struct {
 	QueueTable
 	UnifiedSendMessageTable
 	TimeOutTable
-	last_time_update	time.Time
-	opts 				Options
+	last_time_update time.Time
+	opts             Options
 }
-func (this *QTable) GetSeats() map[string]BasePlayer{
+
+func (this *QTable) GetSeats() map[string]BasePlayer {
 	panic("implement func GetSeats() map[string]BasePlayer")
 }
-func (this *QTable) GetModule() module.RPCModule{
+func (this *QTable) GetModule() module.RPCModule {
 	panic("implement func GetModule() module.RPCModule")
 }
-func (this *QTable)update(arge interface{})  {
+func (this *QTable) update(arge interface{}) {
 	defer func() {
 		if r := recover(); r != nil {
-			log.Error("update error %v",r)
+			log.Error("update error %v", r)
 		}
 	}()
 	this.ExecuteEvent(arge) //执行这一帧客户端发送过来的消息
-	if this.opts.Update!=nil{
+	if this.opts.Update != nil {
 		this.opts.Update(time.Now().Sub(this.last_time_update))
 	}
 	this.ExecuteCallBackMsg(this.Trace()) //统一发送数据到客户端
 	this.CheckTimeOut()
 	if this.Runing() {
-		timewheel.GetTimeWheel().AddTimer(50 * time.Millisecond , nil,this.update)
+		timewheel.GetTimeWheel().AddTimer(50*time.Millisecond, nil, this.update)
 	}
 }
+
 //可以进行一些初始化的工作在table第一次被创建的时候调用
 func (this *QTable) OnCreate() {
 	this.ResetTimeOut()
-	this.last_time_update=time.Now()
-	timewheel.GetTimeWheel().AddTimer(50 * time.Millisecond, nil, this.update)
+	this.last_time_update = time.Now()
+	timewheel.GetTimeWheel().AddTimer(50*time.Millisecond, nil, this.update)
 }
 
 func (this *QTable) OnDestroy() {
-	if this.opts.DestroyCallbacks!=nil{
-		err := this.opts.DestroyCallbacks(this);
-		if err!=nil{
-			log.Error("DestroyCallbacks %v",err)
+	if this.opts.DestroyCallbacks != nil {
+		err := this.opts.DestroyCallbacks(this)
+		if err != nil {
+			log.Error("DestroyCallbacks %v", err)
 		}
 	}
 }
 
-func (this *QTable)OnInit(subtable SubTable,opts ...Option) error {
+func (this *QTable) OnInit(subtable SubTable, opts ...Option) error {
 	subtable.GetSeats()
 	subtable.GetModule()
 	this.opts = newOptions(opts...)
-	this.last_time_update=time.Now()
-	this.BaseTableImpInit(subtable,opts...)
+	this.last_time_update = time.Now()
+	this.BaseTableImpInit(subtable, opts...)
 	this.QueueInit(opts...)
-	this.UnifiedSendMessageTableInit(subtable,this.opts.SendMsgCapaciity)
+	this.UnifiedSendMessageTableInit(subtable, this.opts.SendMsgCapaciity)
 	this.TimeOutTableInit(subtable, this.opts.TimeOut)
 	return nil
 }
 
 type BaseTableImp struct {
-	opts 				Options
-	trace				log.TraceSpan
-	state         		int //当前写的队列
-	subtable      		BaseTable
+	opts     Options
+	trace    log.TraceSpan
+	state    int //当前写的队列
+	subtable BaseTable
 }
 
-func (this *BaseTableImp) BaseTableImpInit(subtable BaseTable,opts ...Option) {
+func (this *BaseTableImp) BaseTableImpInit(subtable BaseTable, opts ...Option) {
 	this.opts = newOptions(opts...)
 	this.state = Uninitialized
 	this.subtable = subtable
-	this.trace=log.CreateRootTrace()
+	this.trace = log.CreateRootTrace()
 }
 
-func (this *BaseTableImp) Options() 	Options{
+func (this *BaseTableImp) Options() Options {
 	return this.opts
 }
 
@@ -107,8 +109,8 @@ func (this *BaseTableImp) TableId() string {
 func (this *BaseTableImp) Trace() log.TraceSpan {
 	return this.trace
 }
-func (this *BaseTableImp) SetTrace(span log.TraceSpan){
-	this.trace=span
+func (this *BaseTableImp) SetTrace(span log.TraceSpan) {
+	this.trace = span
 }
 
 //uninitialized active paused stoped destroyed
@@ -117,7 +119,7 @@ func (this *BaseTableImp) State() int {
 }
 
 func (this *BaseTableImp) Runing() bool {
-	if this.state!=Uninitialized{
+	if this.state != Uninitialized {
 		return true
 	}
 	return false
@@ -196,7 +198,7 @@ func (this *BaseTableImp) Finish() {
 	if this.state == Initialized {
 		this.state = Uninitialized
 		this.subtable.OnDestroy()
-	}else if this.state == Active {
+	} else if this.state == Active {
 		this.subtable.OnPause()
 		this.subtable.OnStop()
 		this.state = Uninitialized
@@ -213,6 +215,7 @@ func (this *BaseTableImp) Finish() {
 		this.subtable.OnDestroy()
 	}
 }
+
 //可以进行一些初始化的工作在table第一次被创建的时候调用
 func (this *BaseTableImp) OnCreate() {
 	panic("implement func OnCreate()")

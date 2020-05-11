@@ -25,10 +25,8 @@ var (
 	Stoped        = 4 //已停止状态
 )
 
-
-
 type BaseTable interface {
-	Options() 	Options
+	Options() Options
 	TableId() string
 
 	OnCreate()  //可以进行一些初始化的工作在table第一次被创建的时候调用
@@ -40,8 +38,8 @@ type BaseTable interface {
 	OnDestroy() //在table销毁时调用 销毁：onPause()->onStop()->onDestroy()
 	OnTimeOut() //当table超时了
 
-	State() int //uninitialized active paused stoped destroyed
-	Runing() bool	//table是否在Runing中,只要在Runing中就能接收和处理消息
+	State() int   //uninitialized active paused stoped destroyed
+	Runing() bool //table是否在Runing中,只要在Runing中就能接收和处理消息
 	Create()
 	Start()
 	Stop()
@@ -68,11 +66,11 @@ type BasePlayer interface {
 	*/
 	OnResponse(session gate.Session)
 	/*
-	服务器跟玩家最后一次成功通信时间
-	 */
+		服务器跟玩家最后一次成功通信时间
+	*/
 	GetLastReqResDate() int64
 	Body() interface{}
 	SetBody(body interface{})
 	Session() gate.Session
-	Type() 		string
+	Type() string
 }

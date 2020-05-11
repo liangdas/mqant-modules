@@ -27,11 +27,11 @@ import (
 type Filter func()
 
 type CallBackMsg struct {
-	notify  	bool     	//是否是广播
-	needReply	bool 		//是否需要回复
-	players 	[]string 	//如果不是广播就指定session
-	topic   	*string
-	body    	*[]byte
+	notify    bool     //是否是广播
+	needReply bool     //是否需要回复
+	players   []string //如果不是广播就指定session
+	topic     *string
+	body      *[]byte
 }
 type TableImp interface {
 	GetSeats() map[string]BasePlayer
@@ -42,7 +42,7 @@ type UnifiedSendMessageTable struct {
 	tableimp      TableImp
 }
 
-func (this *UnifiedSendMessageTable) UnifiedSendMessageTableInit(tableimp TableImp,Capaciity uint32) {
+func (this *UnifiedSendMessageTable) UnifiedSendMessageTableInit(tableimp TableImp, Capaciity uint32) {
 	this.queue_message = queue.NewQueue(Capaciity)
 	this.tableimp = tableimp
 }
@@ -65,11 +65,11 @@ func (this *UnifiedSendMessageTable) FindPlayer(session gate.Session) BasePlayer
 
 func (this *UnifiedSendMessageTable) SendCallBackMsg(players []string, topic string, body []byte) error {
 	ok, quantity := this.queue_message.Put(&CallBackMsg{
-		notify:  false,
-		needReply:true,
-		players: players,
-		topic:   &topic,
-		body:    &body,
+		notify:    false,
+		needReply: true,
+		players:   players,
+		topic:     &topic,
+		body:      &body,
 	})
 	if !ok {
 		return fmt.Errorf("Put Fail, quantity:%v\n", quantity)
@@ -80,11 +80,11 @@ func (this *UnifiedSendMessageTable) SendCallBackMsg(players []string, topic str
 
 func (this *UnifiedSendMessageTable) NotifyCallBackMsg(topic string, body []byte) error {
 	ok, quantity := this.queue_message.Put(&CallBackMsg{
-		notify:  true,
-		needReply:true,
-		players: nil,
-		topic:   &topic,
-		body:    &body,
+		notify:    true,
+		needReply: true,
+		players:   nil,
+		topic:     &topic,
+		body:      &body,
 	})
 	if !ok {
 		return fmt.Errorf("Put Fail, quantity:%v\n", quantity)
@@ -95,11 +95,11 @@ func (this *UnifiedSendMessageTable) NotifyCallBackMsg(topic string, body []byte
 
 func (this *UnifiedSendMessageTable) SendCallBackMsgNR(players []string, topic string, body []byte) error {
 	ok, quantity := this.queue_message.Put(&CallBackMsg{
-		notify:  false,
-		needReply:false,
-		players: players,
-		topic:   &topic,
-		body:    &body,
+		notify:    false,
+		needReply: false,
+		players:   players,
+		topic:     &topic,
+		body:      &body,
 	})
 	if !ok {
 		return fmt.Errorf("Put Fail, quantity:%v\n", quantity)
@@ -110,11 +110,11 @@ func (this *UnifiedSendMessageTable) SendCallBackMsgNR(players []string, topic s
 
 func (this *UnifiedSendMessageTable) NotifyCallBackMsgNR(topic string, body []byte) error {
 	ok, quantity := this.queue_message.Put(&CallBackMsg{
-		notify:  true,
-		needReply:false,
-		players: nil,
-		topic:   &topic,
-		body:    &body,
+		notify:    true,
+		needReply: false,
+		players:   nil,
+		topic:     &topic,
+		body:      &body,
 	})
 	if !ok {
 		return fmt.Errorf("Put Fail, quantity:%v\n", quantity)
@@ -125,16 +125,16 @@ func (this *UnifiedSendMessageTable) NotifyCallBackMsgNR(topic string, body []by
 
 /**
 合并玩家所在网关
- */
-func (this *UnifiedSendMessageTable) mergeGate() (map[string][]string){
-	merge:=map[string][]string{}
+*/
+func (this *UnifiedSendMessageTable) mergeGate() map[string][]string {
+	merge := map[string][]string{}
 	for _, role := range this.tableimp.GetSeats() {
 		if role != nil && role.Session() != nil {
 			//未断网
-			if _,ok:=merge[role.Session().GetServerId()];ok{
-				merge[role.Session().GetServerId()]=append(merge[role.Session().GetServerId()],role.Session().GetSessionId())
-			}else{
-				merge[role.Session().GetServerId()]=[]string{role.Session().GetSessionId()}
+			if _, ok := merge[role.Session().GetServerId()]; ok {
+				merge[role.Session().GetServerId()] = append(merge[role.Session().GetServerId()], role.Session().GetSessionId())
+			} else {
+				merge[role.Session().GetServerId()] = []string{role.Session().GetSessionId()}
 			}
 		}
 	}
@@ -145,7 +145,7 @@ func (this *UnifiedSendMessageTable) mergeGate() (map[string][]string){
 【每帧调用】统一发送所有消息给各个客户端
 */
 func (this *UnifiedSendMessageTable) ExecuteCallBackMsg(span log.TraceSpan) {
-	var merge map[string][]string;
+	var merge map[string][]string
 	ok := true
 	queue := this.queue_message
 	var index = 0
@@ -155,29 +155,29 @@ func (this *UnifiedSendMessageTable) ExecuteCallBackMsg(span log.TraceSpan) {
 		if _ok {
 			msg := val.(*CallBackMsg)
 			if msg.notify {
-				if merge==nil{
-					merge=this.mergeGate()
+				if merge == nil {
+					merge = this.mergeGate()
 				}
-				for serverid,plist:=range merge{
-					sessionids:=strings.Join(plist,",")
+				for serverid, plist := range merge {
+					sessionids := strings.Join(plist, ",")
 					server, e := this.tableimp.GetModule().GetApp().GetServerById(serverid)
 					if e != nil {
-						log.Warning("SendBatch error %v", e);
+						log.Warning("SendBatch error %v", e)
 					}
-					if msg.needReply{
+					if msg.needReply {
 						ctx, _ := context.WithTimeout(context.TODO(), time.Second*3)
-						result,err:=server.Call(ctx,"SendBatch",span,sessionids,*msg.topic, *msg.body)
+						result, err := server.Call(ctx, "SendBatch", span, sessionids, *msg.topic, *msg.body)
 						if err != "" {
-							log.Warning("SendBatch error %v %v",serverid,err);
+							log.Warning("SendBatch error %v %v", serverid, err)
 						} else {
-							if int(result.(int64))<len(plist){
+							if int(result.(int64)) < len(plist) {
 								//有连接断了
 							}
 						}
-					}else{
-						err:=server.CallNR("SendBatch",sessionids,*msg.topic, *msg.body)
+					} else {
+						err := server.CallNR("SendBatch", sessionids, *msg.topic, *msg.body)
 						if err != nil {
-							log.Warning("SendBatch error %v %v",serverid,err.Error());
+							log.Warning("SendBatch error %v %v", serverid, err.Error())
 						}
 					}
 
@@ -186,13 +186,13 @@ func (this *UnifiedSendMessageTable) ExecuteCallBackMsg(span log.TraceSpan) {
 				for _, sessionId := range msg.players {
 					for _, role := range this.tableimp.GetSeats() {
 						if role != nil {
-							if (role.Session() != nil) && (role.Session().GetSessionId() == sessionId)  {
-								if msg.needReply{
+							if (role.Session() != nil) && (role.Session().GetSessionId() == sessionId) {
+								if msg.needReply {
 									e := role.Session().Send(*msg.topic, *msg.body)
-									if e==""{
+									if e == "" {
 										role.OnResponse(role.Session())
 									}
-								}else{
+								} else {
 									_ = role.Session().SendNR(*msg.topic, *msg.body)
 								}
 							}
