@@ -38,6 +38,7 @@ func (self *Room) RoomId() int {
 
 func (self *Room) CreateById(module module.RPCModule, tableId string, newTablefunc NewTableFunc) (BaseTable, error) {
 	if table, ok := self.tables.Load(tableId); ok {
+		table.(BaseTable).Run()
 		return table.(BaseTable), nil
 	}
 	table, err := newTablefunc(module, tableId)
@@ -50,6 +51,7 @@ func (self *Room) CreateById(module module.RPCModule, tableId string, newTablefu
 
 func (self *Room) GetTable(tableId string) BaseTable {
 	if table, ok := self.tables.Load(tableId); ok {
+		table.(BaseTable).Run()
 		return table.(BaseTable)
 	}
 	return nil

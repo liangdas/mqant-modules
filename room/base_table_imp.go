@@ -44,6 +44,7 @@ func (this *QTable) update(arge interface{}) {
 	defer func() {
 		if r := recover(); r != nil {
 			log.Error("update error %v", r)
+			this.Finish()
 		}
 	}()
 	this.ExecuteEvent(arge) //执行这一帧客户端发送过来的消息
@@ -53,15 +54,14 @@ func (this *QTable) update(arge interface{}) {
 	this.ExecuteCallBackMsg(this.Trace()) //统一发送数据到客户端
 	this.CheckTimeOut()
 	if this.Runing() {
-		timewheel.GetTimeWheel().AddTimer(50*time.Millisecond, nil, this.update)
+		timewheel.GetTimeWheel().AddTimer(this.opts.RunInterval, nil, this.update)
 	}
 }
 
-//可以进行一些初始化的工作在table第一次被创建的时候调用
 func (this *QTable) OnCreate() {
 	this.ResetTimeOut()
 	this.last_time_update = time.Now()
-	timewheel.GetTimeWheel().AddTimer(50*time.Millisecond, nil, this.update)
+	timewheel.GetTimeWheel().AddTimer(this.opts.RunInterval, nil, this.update)
 }
 
 func (this *QTable) OnDestroy() {
@@ -113,137 +113,40 @@ func (this *BaseTableImp) SetTrace(span log.TraceSpan) {
 	this.trace = span
 }
 
-//uninitialized active paused stoped destroyed
-func (this *BaseTableImp) State() int {
-	return this.state
-}
-
 func (this *BaseTableImp) Runing() bool {
-	if this.state != Uninitialized {
+	if this.state ==Active {
 		return true
 	}
 	return false
 }
 
 //初始化table
-func (this *BaseTableImp) Create() {
-	if this.state == Uninitialized {
-		this.state = Initialized
-		this.subtable.OnCreate()
-	}
-}
-
-//开始一次游戏
-func (this *BaseTableImp) Start() {
-	if this.state == Uninitialized {
+func (this *BaseTableImp) Run() {
+	if this.state != Active {
 		this.state = Initialized
 		this.subtable.OnCreate()
 		this.state = Active
-		this.subtable.OnStart()
-		this.subtable.OnResume()
-	} else if this.state == Initialized {
-		this.state = Active
-		this.subtable.OnStart()
-		this.subtable.OnResume()
-	} else if this.state == Stoped {
-		this.state = Active
-		this.subtable.OnRestart()
-		this.subtable.OnStart()
-		this.subtable.OnResume()
 	}
 }
 
-//暂停
-func (this *BaseTableImp) Pause() {
-	if this.state == Active {
-		this.state = Paused
-		this.subtable.OnPause()
-	}
-}
-
-//停止
-func (this *BaseTableImp) Stop() {
-	if this.state == Active {
-		this.state = Paused
-		this.subtable.OnPause()
-		this.state = Stoped
-		this.subtable.OnStop()
-	} else if this.state == Paused {
-		this.state = Stoped
-		this.subtable.OnStop()
-	}
-}
-
-//重新开始
-func (this *BaseTableImp) Restart() {
-	if this.state == Stoped {
-		this.state = Initialized
-		this.subtable.OnRestart()
-		this.subtable.OnStart()
-		this.state = Active
-		this.subtable.OnResume()
-	}
-}
-
-//重新开始
-func (this *BaseTableImp) Resume() {
-	if this.state == Paused {
-		this.state = Active
-		this.subtable.OnResume()
-	}
-}
 
 //停止table
 func (this *BaseTableImp) Finish() {
 	if this.state == Initialized {
-		this.state = Uninitialized
 		this.subtable.OnDestroy()
+		this.state = Finished
 	} else if this.state == Active {
-		this.subtable.OnPause()
-		this.subtable.OnStop()
-		this.state = Uninitialized
 		this.subtable.OnDestroy()
-	} else if this.state == Paused {
-		this.subtable.OnStop()
-		this.state = Uninitialized
+		this.state = Finished
+	} else if this.state == Uninitialized {
 		this.subtable.OnDestroy()
-	} else if this.state == Stoped {
-		this.state = Uninitialized
-		this.subtable.OnDestroy()
-	} else if this.state == Initialized {
-		this.state = Uninitialized
-		this.subtable.OnDestroy()
+		this.state = Finished
 	}
 }
 
 //可以进行一些初始化的工作在table第一次被创建的时候调用
 func (this *BaseTableImp) OnCreate() {
 	panic("implement func OnCreate()")
-}
-
-//table创建完成，一次游戏开始，可以在这里初始化游戏数据 开始：onCreate()->onStart() onStop()->onRestart()->onStart()
-func (this *BaseTableImp) OnStart() {
-	//log.TInfo(this.Trace(),"BaseTableImp %v", "OnStart")
-}
-
-//在table停止后，在再次启动之前被调用 重启  onStop()->onRestart()
-func (this *BaseTableImp) OnRestart() {
-	//log.TInfo(this.Trace(),"BaseTableImp %v", "OnRestart")
-}
-
-//取得控制权，可接受用户输入。 恢复：onCreate()->onStart()->onResume() onPause()->onResume() onStop()->onRestart()->onStart()->onResume()
-func (this *BaseTableImp) OnResume() {
-	//log.TInfo(this.Trace(),"BaseTableImp %v", "OnResume")
-}
-
-//table内暂停，可接收用户消息,此方法主要用在游戏过程中的游戏时钟暂停,不销毁本次游戏的数据 暂停：onStart()->onPause()
-func (this *BaseTableImp) OnPause() {
-	//log.TInfo(this.Trace(),"BaseTableImp %v", "OnPause")
-}
-
-//当本次游戏完成时调用,这里需要销毁游戏数据，对游戏数据做本地化处理，比如游戏结算等 停止:onPause()->onStop()
-func (this *BaseTableImp) OnStop() {
-	//log.TInfo(this.Trace(),"BaseTableImp %v", "OnStop")
 }
 
 //在table销毁时调用,将无法再接收用户消息 销毁：onPause()->onStop()->onDestroy()

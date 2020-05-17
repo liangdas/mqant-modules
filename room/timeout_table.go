@@ -48,7 +48,9 @@ func (this *TimeOutTable) CheckTimeOut() {
 			}
 		}
 	}
-	if time.Now().Unix() > (this.lastCommunicationDate + this.timeout) {
-		this.subtable.OnTimeOut()
+	if this.timeout==0{
+		if time.Now().Unix() > (this.lastCommunicationDate + this.timeout) {
+			this.subtable.OnTimeOut()
+		}
 	}
 }
