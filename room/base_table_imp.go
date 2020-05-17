@@ -114,7 +114,7 @@ func (this *BaseTableImp) SetTrace(span log.TraceSpan) {
 }
 
 func (this *BaseTableImp) Runing() bool {
-	if this.state ==Active {
+	if this.state == Active {
 		return true
 	}
 	return false
@@ -128,7 +128,6 @@ func (this *BaseTableImp) Run() {
 		this.state = Active
 	}
 }
-
 
 //停止table
 func (this *BaseTableImp) Finish() {

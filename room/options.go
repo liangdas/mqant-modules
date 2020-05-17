@@ -29,7 +29,7 @@ func newOptions(opts ...Option) Options {
 		TimeOut:          60,
 		Capaciity:        256,
 		SendMsgCapaciity: 256,
-		RunInterval:100*time.Millisecond,
+		RunInterval:      100 * time.Millisecond,
 	}
 
 	for _, o := range opts {
@@ -49,10 +49,10 @@ type Options struct {
 	TableId          string
 	Router           Route
 	Trace            log.TraceSpan
-	TimeOut          int64  //判断客户端超时时间单位秒
-	Capaciity        uint32 //消息队列容量,真实容量为 Capaciity*2
-	SendMsgCapaciity uint32 //每帧发送消息容量
-	RunInterval		 time.Duration //运行间隔
+	TimeOut          int64         //判断客户端超时时间单位秒
+	Capaciity        uint32        //消息队列容量,真实容量为 Capaciity*2
+	SendMsgCapaciity uint32        //每帧发送消息容量
+	RunInterval      time.Duration //运行间隔
 }
 
 func Update(fn UpdateHandle) Option {
@@ -120,7 +120,6 @@ func SendMsgCapaciity(v uint32) Option {
 		o.SendMsgCapaciity = v
 	}
 }
-
 
 func RunInterval(v time.Duration) Option {
 	return func(o *Options) {

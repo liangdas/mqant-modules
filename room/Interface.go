@@ -21,7 +21,7 @@ var (
 	Uninitialized = 0 //未初始化
 	Initialized   = 1 //已初始化的
 	Active        = 2 //活跃状态
-	Finished        = 4 //已停止状态
+	Finished      = 4 //已停止状态
 )
 
 type BaseTable interface {
@@ -34,7 +34,7 @@ type BaseTable interface {
 
 	Runing() bool //table是否在Runing中,只要在Runing中就能接收和处理消息
 	Run()
-	Finish()  //停止table
+	Finish() //停止table
 
 	Register(id string, f interface{})
 	SetReceive(receive QueueReceive)
