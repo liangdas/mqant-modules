@@ -6,12 +6,12 @@ package sms
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/garyburd/redigo/redis"
+	"github.com/gomodule/redigo/redis"
+	"github.com/liangdas/mqant-modules/tools"
 	"github.com/liangdas/mqant/conf"
 	"github.com/liangdas/mqant/gate"
 	"github.com/liangdas/mqant/module"
 	"github.com/liangdas/mqant/module/base"
-	"github.com/liangdas/mqant/utils"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -194,7 +194,7 @@ func (self *SMS) sendcloud(phone string, smsCode int64) string {
 发送验证码
 */
 func (self *SMS) doSendVerifiycode(session gate.Session, phone string, purpose string, extra map[string]interface{}) (string, string) {
-	conn := utils.GetRedisFactory().GetPool(self.RedisUrl).Get()
+	conn := tools.GetRedisFactory().GetPool(self.RedisUrl).Get()
 	defer conn.Close()
 	ttl, err := redis.Int64(conn.Do("TTL", fmt.Sprintf(MobileTTLFormat, phone)))
 	if err != nil {
@@ -258,7 +258,7 @@ func (self *SMS) doSendVerifiycode(session gate.Session, phone string, purpose s
 如果验证码已过期将返回失败
 */
 func (self *SMS) getCodeData(session gate.Session, phone string, smsCode int64, del bool) (map[string]interface{}, string) {
-	conn := utils.GetRedisFactory().GetPool(self.RedisUrl).Get()
+	conn := tools.GetRedisFactory().GetPool(self.RedisUrl).Get()
 	defer conn.Close()
 	r, err := redis.Bytes(conn.Do("GET", fmt.Sprintf(MobileSmsCodeFormat, phone, smsCode)))
 	if err != nil {
