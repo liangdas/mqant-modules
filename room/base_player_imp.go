@@ -42,6 +42,11 @@ func (self *BasePlayerImp) Bind(session gate.Session) BasePlayer {
 	return self
 }
 
+func (self *BasePlayerImp) UnBind() error {
+	self.session = nil
+	return nil
+}
+
 /**
 玩家主动发请求时间
 */

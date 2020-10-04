@@ -45,6 +45,8 @@ type BaseTable interface {
 type BasePlayer interface {
 	IsBind() bool
 	Bind(session gate.Session) BasePlayer
+
+	UnBind() error
 	/**
 	玩家主动发请求时触发
 	*/
