@@ -17,6 +17,7 @@ import (
 	"github.com/liangdas/mqant/log"
 	"github.com/liangdas/mqant/module"
 	"github.com/liangdas/mqant/module/modules/timer"
+	"runtime"
 	"time"
 )
 
@@ -43,7 +44,9 @@ func (this *QTable) GetModule() module.RPCModule {
 func (this *QTable) update(arge interface{}) {
 	defer func() {
 		if r := recover(); r != nil {
-			log.Error("update error %v", r)
+			buff := make([]byte, 1024)
+			runtime.Stack(buff, false)
+			log.Error("Update panic(%v)\n info:%s", r, string(buff))
 			this.Finish()
 		}
 	}()
