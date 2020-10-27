@@ -6,7 +6,11 @@ import (
 	"time"
 )
 
+type ProUpdateHandle func(ds time.Duration)
+
 type UpdateHandle func(ds time.Duration)
+
+type PostUpdateHandle func(ds time.Duration)
 
 type NoFoundHandle func(msg *QueueMsg) (reflect.Value, error)
 
@@ -41,7 +45,9 @@ func newOptions(opts ...Option) Options {
 type Option func(*Options)
 
 type Options struct {
+	ProUpdate		 ProUpdateHandle
 	Update           UpdateHandle
+	PostUpdate		 PostUpdateHandle
 	NoFound          NoFoundHandle
 	ErrorHandle      ErrorHandle
 	RecoverHandle    RecoverHandle
@@ -53,6 +59,18 @@ type Options struct {
 	Capaciity        uint32        //消息队列容量,真实容量为 Capaciity*2
 	SendMsgCapaciity uint32        //每帧发送消息容量
 	RunInterval      time.Duration //运行间隔
+}
+
+func ProUpdate(fn ProUpdateHandle) Option {
+	return func(o *Options) {
+		o.ProUpdate = fn
+	}
+}
+
+func PostUpdate(fn PostUpdateHandle) Option {
+	return func(o *Options) {
+		o.PostUpdate = fn
+	}
 }
 
 func Update(fn UpdateHandle) Option {

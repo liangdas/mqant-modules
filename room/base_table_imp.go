@@ -50,12 +50,19 @@ func (this *QTable) update(arge interface{}) {
 			this.Finish()
 		}
 	}()
+	if this.opts.ProUpdate != nil {
+		this.opts.ProUpdate(time.Now().Sub(this.last_time_update))
+	}
 	this.ExecuteEvent(arge) //执行这一帧客户端发送过来的消息
 	if this.opts.Update != nil {
 		this.opts.Update(time.Now().Sub(this.last_time_update))
 	}
 	this.ExecuteCallBackMsg(this.Trace()) //统一发送数据到客户端
 	this.CheckTimeOut()
+	if this.opts.PostUpdate != nil {
+		this.opts.PostUpdate(time.Now().Sub(this.last_time_update))
+	}
+	this.last_time_update = time.Now()
 	if this.Runing() {
 		timewheel.GetTimeWheel().AddTimer(this.opts.RunInterval, nil, this.update)
 	}
