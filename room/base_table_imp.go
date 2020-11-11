@@ -38,8 +38,8 @@ type QTable struct {
 func (this *QTable) GetSeats() map[string]BasePlayer {
 	panic("implement func GetSeats() map[string]BasePlayer")
 }
-func (this *QTable) GetModule() module.RPCModule {
-	panic("implement func GetApp() app.RPCModule")
+func (this *QTable) GetApp() module.App {
+	panic("implement func GetApp() module.App")
 }
 func (this *QTable) update(arge interface{}) {
 	defer func() {
