@@ -39,7 +39,7 @@ func (this *QTable) GetSeats() map[string]BasePlayer {
 	panic("implement func GetSeats() map[string]BasePlayer")
 }
 func (this *QTable) GetModule() module.RPCModule {
-	panic("implement func GetModule() module.RPCModule")
+	panic("implement func GetApp() app.RPCModule")
 }
 func (this *QTable) update(arge interface{}) {
 	defer func() {
@@ -85,7 +85,7 @@ func (this *QTable) OnDestroy() {
 
 func (this *QTable) OnInit(subtable SubTable, opts ...Option) error {
 	subtable.GetSeats()
-	subtable.GetModule()
+	subtable.GetApp()
 	this.opts = newOptions(opts...)
 	this.last_time_update = time.Now()
 	this.BaseTableImpInit(subtable, opts...)

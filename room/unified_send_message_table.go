@@ -35,7 +35,7 @@ type CallBackMsg struct {
 }
 type TableImp interface {
 	GetSeats() map[string]BasePlayer
-	GetModule() module.RPCModule
+	GetApp() module.App
 }
 type UnifiedSendMessageTable struct {
 	queue_message *queue.EsQueue
@@ -160,7 +160,7 @@ func (this *UnifiedSendMessageTable) ExecuteCallBackMsg(span log.TraceSpan) {
 				}
 				for serverid, plist := range merge {
 					sessionids := strings.Join(plist, ",")
-					server, e := this.tableimp.GetModule().GetApp().GetServerById(serverid)
+					server, e := this.tableimp.GetApp().GetServerByID(serverid)
 					if e != nil {
 						log.Warning("SendBatch error %v", e)
 					}
