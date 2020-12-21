@@ -1,7 +1,7 @@
 package tools
 
 import (
-"github.com/gomodule/redigo/redis"
+	"github.com/gomodule/redigo/redis"
 	"sync"
 	"time"
 )
@@ -10,8 +10,7 @@ var factory *RedisFactory
 
 func GetRedisFactory() *RedisFactory {
 	if factory == nil {
-		factory = &RedisFactory{
-		}
+		factory = &RedisFactory{}
 	}
 	return factory
 }

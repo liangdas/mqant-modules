@@ -45,9 +45,9 @@ func newOptions(opts ...Option) Options {
 type Option func(*Options)
 
 type Options struct {
-	ProUpdate		 ProUpdateHandle
+	ProUpdate        ProUpdateHandle
 	Update           UpdateHandle
-	PostUpdate		 PostUpdateHandle
+	PostUpdate       PostUpdateHandle
 	NoFound          NoFoundHandle
 	ErrorHandle      ErrorHandle
 	RecoverHandle    RecoverHandle
