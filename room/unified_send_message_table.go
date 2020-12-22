@@ -226,7 +226,7 @@ func (this *UnifiedSendMessageTable) SendMsg(span log.TraceSpan, msg *CallBackMs
 					}
 				}
 			} else {
-				err := server.CallNR("SendBatch", sessionids, *msg.topic, *msg.body)
+				err := server.CallNR("SendBatch",span, sessionids, *msg.topic, *msg.body)
 				if err != nil {
 					log.Warning("SendBatch error %v %v", serverid, err.Error())
 				}
