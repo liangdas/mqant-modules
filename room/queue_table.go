@@ -18,6 +18,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/yireyun/go-queue"
 	"reflect"
+	"runtime"
 	"sync"
 )
 
@@ -151,21 +152,11 @@ func (self *QueueTable) ExecuteEvent(arge interface{}) {
 				_runFunc := func() {
 					defer func() {
 						if r := recover(); r != nil {
-							var rn = ""
-							switch r.(type) {
-
-							case string:
-								rn = r.(string)
-							case error:
-								rn = r.(error).Error()
-							}
-							//buf := make([]byte, 1024)
-							//l := runtime.Stack(buf, false)
-							//errstr := string(buf[:l])
+							buff := make([]byte, 1024)
+							runtime.Stack(buff, false)
 							if self.opts.RecoverHandle != nil {
-								self.opts.RecoverHandle(msg, errors.New(rn))
+								self.opts.RecoverHandle(msg, errors.New(string(buff)))
 							}
-							//log.Error("table qeueu event(%s) exec fail error:%s \n ----Stack----\n %s", msg.Func, rn, errstr)
 						}
 					}()
 					out := f.Call(in)
