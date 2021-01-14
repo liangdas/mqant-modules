@@ -214,6 +214,7 @@ func (this *UnifiedSendMessageTable) SendMsg(span log.TraceSpan, msg *CallBackMs
 			server, e := this.tableimp.GetApp().GetServerByID(serverid)
 			if e != nil {
 				log.Warning("SendBatch error %v", e)
+				return
 			}
 			if msg.needReply {
 				ctx, _ := context.WithTimeout(context.TODO(), time.Second*3)
