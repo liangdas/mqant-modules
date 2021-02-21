@@ -1,0 +1,236 @@
+{
+  "wood": {
+    "type": "material",
+    "name":"wood",
+    "name_cn":"木头",
+    "sort":0,
+    "describe": "this waterskin ll hold a bit of water, at least"
+  },
+  "cloth":{
+    "type": "material",
+    "name":"cloth",
+    "name_cn":"布",
+    "sort":1,
+    "describe": "this waterskin ll hold a bit of water, at least"
+  },
+  "fur": {
+    "type": "material",
+    "name":"fur",
+    "name_cn":"毛皮",
+    "sort":2,
+    "describe": "this waterskin ll hold a bit of water, at least"
+  },
+  "bait": {
+    "type": "material",
+    "name":"bait",
+    "name_cn":"诱饵",
+    "sort":3,
+    "describe": "this waterskin ll hold a bit of water, at least"
+  },
+  "meat": {
+    "type": "material",
+    "name":"meat",
+    "name_cn":"肉",
+    "sort":4,
+    "describe": "this waterskin ll hold a bit of water, at least"
+  },
+  "cured meat": {
+    "type": "material",
+    "name":"cured meat",
+    "name_cn":"熏肉",
+    "sort":5,
+    "describe": "this waterskin ll hold a bit of water, at least"
+  },
+  "leather": {
+    "type": "material",
+    "name":"leather",
+    "name_cn":"皮革",
+    "sort":6,
+    "describe": "this waterskin ll hold a bit of water, at least"
+  },
+  "scales": {
+    "type": "material",
+    "name":"scales",
+    "name_cn":"鳞片",
+    "sort":6,
+    "describe": "this waterskin ll hold a bit of water, at least"
+  },
+  "teeth": {
+    "type": "material",
+    "name":"teeth",
+    "name_cn":"牙齿",
+    "sort":6,
+    "describe": "this waterskin ll hold a bit of water, at least"
+  },
+  "iron": {
+    "type": "material",
+    "name":"iron",
+    "name_cn":"铁",
+    "sort":7,
+    "describe": "this waterskin ll hold a bit of water, at least"
+  },
+  "coal": {
+    "type": "material",
+    "name":"coal",
+    "name_cn":"煤",
+    "sort":8,
+    "describe": "this waterskin ll hold a bit of water, at least"
+  },
+  "steel": {
+    "type": "material",
+    "name":"steel",
+    "name_cn":"钢",
+    "sort":9,
+    "describe": "this waterskin ll hold a bit of water, at least"
+  },
+  "sulphur": {
+    "type": "material",
+    "name":"sulphur",
+    "name_cn":"硫磺",
+    "sort":10,
+    "describe": "this waterskin ll hold a bit of water, at least"
+  },
+  "torch": {
+    "type": "tool",
+    "name":"torch",
+    "name_cn":"火把",
+    "sort":100,
+    "describe": "this waterskin ll hold a bit of water, at least"
+  },
+  "medicine": {
+    "type": "tool",
+    "name":"medicine",
+    "name_cn":"药剂",
+    "sort":101,
+    "describe": "this waterskin ll hold a bit of water, at least"
+  },
+  "compass": {
+    "type": "tool",
+    "name":"compass",
+    "name_cn":"罗盘",
+    "sort":102,
+    "describe": "this waterskin ll hold a bit of water, at least"
+  },
+  "bolas": {
+    "type": "tool",
+    "name":"bolas",
+    "name_cn":"套索",
+    "sort":103,
+    "describe": "this waterskin ll hold a bit of water, at least"
+  },
+  "grenade": {
+    "type": "tool",
+    "name":"grenade",
+    "name_cn":"手雷",
+    "sort":104,
+    "describe": "this waterskin ll hold a bit of water, at least"
+  },
+
+  "waterskin": {
+    "type": "tool",
+    "name":"waterskin",
+    "name_cn":"水壶",
+    "sort":200,
+    "describe": "this waterskin ll hold a bit of water, at least"
+  },
+  "cask": {
+    "type": "tool",
+    "name":"cask",
+    "name_cn":"水桶",
+    "sort":202,
+    "describe": "this waterskin ll hold a bit of water, at least"
+  },
+  "water tank": {
+    "type": "tool",
+    "name":"water tank",
+    "name_cn":"水罐",
+    "sort":203,
+    "describe": "this waterskin ll hold a bit of water, at least"
+  },
+  "rucksack": {
+    "type": "tool",
+    "name":"rucksack",
+    "name_cn":"帆布背包",
+    "sort":204,
+    "describe": "this waterskin ll hold a bit of water, at least"
+  },
+  "wagon": {
+    "type": "tool",
+    "name":"wagon",
+    "name_cn":"小手推车",
+    "sort":205,
+    "describe": "this waterskin ll hold a bit of water, at least"
+  },
+  "convoy": {
+    "type": "tool",
+    "name":"convoy",
+    "name_cn":"护航队",
+    "sort":206,
+    "describe": "this waterskin ll hold a bit of water, at least"
+  },
+
+  "bone spear": {
+    "type": "weapon",
+    "name":"bone spear",
+    "name_cn":"骨枪",
+    "sort":300,
+    "describe": "this waterskin ll hold a bit of water, at least"
+  },
+  "iron sword": {
+    "type": "weapon",
+    "name":"iron sword",
+    "name_cn":"铁剑",
+    "sort":301,
+    "describe": "this waterskin ll hold a bit of water, at least"
+  },
+  "steel sword": {
+    "type": "weapon",
+    "name":"steel sword",
+    "name_cn":"钢剑",
+    "sort":302,
+    "describe": "this waterskin ll hold a bit of water, at least"
+  },
+  "bayonet": {
+    "type": "weapon",
+    "name":"bayonet",
+    "name_cn":"刺刀",
+    "sort":303,
+    "describe": "this waterskin ll hold a bit of water, at least"
+  },
+  "rifle": {
+    "type": "weapon",
+    "name":"rifle",
+    "name_cn":"步枪",
+    "sort":304,
+    "describe": "this waterskin ll hold a bit of water, at least"
+  },
+  "laser rifle": {
+    "type": "weapon",
+    "name":"laser rifle",
+    "name_cn":"激光步枪",
+    "sort":305,
+    "describe": "this waterskin ll hold a bit of water, at least"
+  },
+  "l armour": {
+    "type": "weapon",
+    "name":"l armour",
+    "name_cn":"皮甲",
+    "sort":301,
+    "describe": "this waterskin ll hold a bit of water, at least"
+  },
+  "i armour": {
+    "type": "weapon",
+    "name":"i armour",
+    "name_cn":"铁甲",
+    "sort":302,
+    "describe": "this waterskin ll hold a bit of water, at least"
+  },
+  "s armour": {
+    "type": "weapon",
+    "name":"s armour",
+    "name_cn":"钢甲",
+    "sort":303,
+    "num":47,
+    "describe": "this waterskin ll hold a bit of water, at least"
+  }
+}
