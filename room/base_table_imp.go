@@ -18,6 +18,7 @@ import (
 	"github.com/liangdas/mqant/module"
 	"github.com/liangdas/mqant/module/modules/timer"
 	"runtime"
+	"sync"
 	"time"
 )
 
@@ -100,6 +101,7 @@ type BaseTableImp struct {
 	trace    log.TraceSpan
 	state    int //当前写的队列
 	subtable BaseTable
+	lock     sync.Mutex
 }
 
 func (this *BaseTableImp) BaseTableImpInit(subtable BaseTable, opts ...Option) {
@@ -132,6 +134,8 @@ func (this *BaseTableImp) Runing() bool {
 
 //初始化table
 func (this *BaseTableImp) Run() {
+	this.lock.Lock()
+	defer this.lock.Unlock()
 	if this.state != Active {
 		this.state = Initialized
 		this.subtable.OnCreate()
@@ -141,6 +145,8 @@ func (this *BaseTableImp) Run() {
 
 //停止table
 func (this *BaseTableImp) Finish() {
+	this.lock.Lock()
+	defer this.lock.Unlock()
 	if this.state == Initialized {
 		this.subtable.OnDestroy()
 		this.state = Finished
