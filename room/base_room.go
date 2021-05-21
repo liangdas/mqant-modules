@@ -32,6 +32,13 @@ func NewRoom(module module.App) *Room {
 	}
 	return room
 }
+
+func (self *Room) OnInit(module module.App, roomId int) error {
+	self.app = module
+	self.roomId = roomId
+	return nil
+}
+
 func (self *Room) RoomId() int {
 	return self.roomId
 }
